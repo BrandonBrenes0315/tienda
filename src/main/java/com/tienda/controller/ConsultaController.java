@@ -8,21 +8,24 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import com.tienda.service.CategoriaService;
 
 @Controller
 @RequestMapping("/consultas")
 public class ConsultaController {
 
     private final ProductoService productoService;
-
-    public ConsultaController(ProductoService productoService) {
-        this.productoService = productoService;
-    }
+private final CategoriaService categoriaService;
+public ConsultaController(ProductoService productoService, CategoriaService categoriaService) {
+    this.productoService = productoService;
+    this.categoriaService = categoriaService;
+}
 
     @GetMapping("/listado")
     public String listado(Model model) {
         var productos = productoService.getProductos(false);
         model.addAttribute("productos", productos);
+        model.addAttribute("categorias", categoriaService.getCategorias(true));
         return "/consultas/listado";
     }
 
@@ -56,6 +59,23 @@ public class ConsultaController {
         model.addAttribute("productos", productos);
         model.addAttribute("precioInf", precioInf);
         model.addAttribute("precioSup", precioSup);
+        return "/consultas/listado";
+    }
+    
+        @PostMapping("/consultaAmpliada")
+    public String consultaAmpliada(@RequestParam BigDecimal precioInf,
+            @RequestParam BigDecimal precioSup,
+            @RequestParam(required = false) Integer idCategoria,
+            Model model) {
+
+        var productos = productoService.consultaAmpliada(precioInf, precioSup, idCategoria);
+
+        model.addAttribute("productos", productos);
+        model.addAttribute("categorias", categoriaService.getCategorias(true));
+        model.addAttribute("precioInfAmpliada", precioInf);
+        model.addAttribute("precioSupAmpliada", precioSup);
+        model.addAttribute("idCategoriaAmpliada", idCategoria);
+
         return "/consultas/listado";
     }
 }
